@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Suivi EPS</title>
+<style>
+  :root{
+    --bg:#F5F3EE;
+    --card:#FFFFFF;
+    --ink:#1C1F26;
+    --ink-soft:#5B6070;
+    --primary:#1B4B43;
+    --primary-light:#2F6B4F;
+    --accent:#E8622C;
+    --accent-soft:#FBE4D6;
+    --muted:#D8D4C9;
+    --alert:#B23A2E;
+    --alert-soft:#F5DAD6;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    padding-bottom:24px;
+  }
+  .app{max-width:520px;margin:0 auto;padding:0 16px;}
+
+  /* Header */
+  header.top{
+    background:var(--primary);
+    color:#fff;
+    padding:18px 16px 22px;
+    margin-bottom:18px;
+  }
+  header.top .inner{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px;}
+  header.top h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.2px;}
+  .lane{
+    height:4px;
+    background-image:repeating-linear-gradient(90deg,#fff 0 14px, transparent 14px 26px);
+    opacity:.55;
+    margin-top:12px;
+  }
+  .backbtn{
+    background:none;border:none;color:#fff;font-size:15px;cursor:pointer;
+    padding:6px 4px;display:flex;align-items:center;gap:4px;opacity:.9;
+  }
+  .backbtn:active{opacity:.6;}
+
+  h2.screen-title{font-size:17px;margin:2px 0 14px;color:var(--ink);}
+  p.sub{color:var(--ink-soft);font-size:14px;margin:-8px 0 16px;}
+
+  /* Home buttons */
+  .home-grid{display:flex;flex-direction:column;gap:14px;margin-top:4px;}
+  .bigbtn{
+    border:2px solid var(--ink);
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:20px 18px;
+    text-align:left;
+    cursor:pointer;
+    display:flex;align-items:center;gap:14px;
+    font-family:inherit;
+  }
+  .bigbtn:active{transform:translateY(1px);}
+  .bigbtn .ico{
+    width:46px;height:46px;flex:0 0 46px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+  }
+  .bigbtn.oubli .ico{background:var(--accent-soft);}
+  .bigbtn.dispense .ico{background:#DCEAE3;}
+  .bigbtn .txt strong{display:block;font-size:16px;margin-bottom:2px;}
+  .bigbtn .txt span{font-size:13px;color:var(--ink-soft);}
+
+  .row-links{display:flex;gap:10px;margin-top:16px;}
+  .linkbtn{
+    flex:1;background:var(--card);border:1.5px solid var(--muted);
+    border-radius:var(--radius);padding:12px;text-align:center;
+    font-size:13.5px;cursor:pointer;color:var(--ink);font-family:inherit;
+  }
+
+  .stats{margin-top:18px;font-size:12.5px;color:var(--ink-soft);text-align:center;}
+
+  /* Class grid */
+  .niveau-block{margin-bottom:16px;}
+  .niveau-label{font-size:13px;font-weight:700;color:var(--primary);margin-bottom:6px;text-transform:none;}
+  .classe-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  .classe-btn{
+    border:2px solid var(--ink);background:var(--card);border-radius:10px;
+    padding:12px 0;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
+  }
+  .classe-btn:active{background:var(--ink);color:#fff;}
+
+  /* Forms */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;color:var(--ink-soft);margin-bottom:5px;}
+  .field input[type=text], .field select, .field textarea{
+    width:100%;padding:12px 12px;border:1.5px solid var(--muted);border-radius:10px;
+    font-size:15px;font-family:inherit;background:#fff;color:var(--ink);
+  }
+  .field textarea{resize:vertical;min-height:56px;}
+  .classe-pill{
+    display:inline-block;background:var(--primary);color:#fff;font-size:12.5px;
+    padding:4px 10px;border-radius:20px;margin-bottom:14px;
+  }
+  .primary-action{
+    width:100%;padding:14px;border:none;border-radius:10px;background:var(--accent);
+    color:#fff;font-size:15.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;
+  }
+  .primary-action:disabled{background:var(--muted);color:#888;}
+  .primary-action.green{background:var(--primary);}
+  .secondary-action{
+    width:100%;padding:12px;border:1.5px solid var(--ink);border-radius:10px;background:transparent;
+    color:var(--ink);font-size:14.5px;cursor:pointer;font-family:inherit;margin-top:10px;
+  }
+
+  /* Confirmation */
+  .confirm-card{
+    background:var(--card);border:2px solid var(--ink);border-radius:var(--radius);
+    padding:20px;text-align:center;margin-bottom:16px;
+  }
+  .confirm-card .count{font-size:42px;font-weight:800;color:var(--accent);line-height:1;}
+  .confirm-card .count.dispense{color:var(--primary);}
+  .confirm-card p{margin:10px 0 0;font-size:15px;}
+  .mini-history{margin-top:14px;}
+  .mini-history-item{
+    display:flex;justify-content:space-between;font-size:13px;color:var(--ink-soft);
+    padding:6px 0;border-top:1px solid var(--muted);
+  }
+
+  /* Calendar */
+  .cal-block{margin-bottom:16px;}
+  .cal-label{font-size:13px;color:var(--ink-soft);margin-bottom:6px;font-weight:600;}
+  .cal-value{font-size:14.5px;font-weight:700;margin-bottom:8px;color:var(--primary);}
+  .calendar{border:1.5px solid var(--muted);border-radius:10px;padding:10px;background:#fff;}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .cal-nav button{
+    border:none;background:var(--bg);width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;
+  }
+  .cal-nav .cal-month{font-size:14px;font-weight:700;text-transform:capitalize;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;}
+  .cal-dow{font-size:11px;color:var(--ink-soft);padding:4px 0;}
+  .cal-day{
+    padding:8px 0;font-size:13px;border-radius:8px;cursor:pointer;background:transparent;border:none;font-family:inherit;
+  }
+  .cal-day.empty{cursor:default;}
+  .cal-day.today{box-shadow:inset 0 0 0 1.5px var(--accent);}
+  .cal-day.selected{background:var(--primary);color:#fff;font-weight:700;}
+  .cal-day:disabled{color:#c9c9c9;cursor:not-allowed;}
+
+  /* History */
+  .filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .tab-toggle{display:flex;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;flex:1;}
+  .tab-toggle button{
+    flex:1;border:none;background:#fff;padding:10px 0;font-size:13.5px;cursor:pointer;font-family:inherit;
+  }
+  .tab-toggle button.active{background:var(--ink);color:#fff;}
+  select.classe-filter{
+    flex:1;min-width:140px;padding:10px;border-radius:10px;border:1.5px solid var(--muted);font-family:inherit;font-size:13.5px;
+  }
+  .hist-item{
+    background:var(--card);border:1.5px solid var(--muted);border-radius:10px;padding:12px 14px;margin-bottom:9px;
+  }
+  .hist-item .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .hist-item .name{font-weight:700;font-size:14.5px;}
+  .hist-item .meta{font-size:12.5px;color:var(--ink-soft);margin-top:3px;}
+  .hist-item .badge{
+    font-size:11px;background:var(--accent-soft);color:#8a3a1a;padding:2px 8px;border-radius:20px;white-space:nowrap;
+  }
+  .hist-item .badge.dispense{background:#DCEAE3;color:var(--primary);}
+  .hist-actions{display:flex;gap:8px;margin-top:8px;}
+  .hist-actions button{
+    border:none;background:var(--bg);border-radius:8px;padding:6px 12px;font-size:12.5px;cursor:pointer;font-family:inherit;
+  }
+  .hist-actions button.del{color:var(--alert);}
+  .empty-state{
+    text-align:center;color:var(--ink-soft);font-size:14px;padding:30px 10px;
+  }
+
+  /* Modal */
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(20,20,20,.5);display:flex;align-items:flex-end;justify-content:center;z-index:50;
+  }
+  .modal-bg.hidden{display:none;}
+  .modal{
+    background:#fff;border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
+  }
+  .modal h3{margin-top:0;font-size:16px;}
+
+  /* Backup screen */
+  .info-box{
+    background:#fff;border:1.5px dashed var(--muted);border-radius:10px;padding:14px;font-size:13px;color:var(--ink-soft);margin-bottom:16px;line-height:1.5;
+  }
+  .danger-box{
+    border:1.5px solid var(--alert-soft);background:var(--alert-soft);border-radius:10px;padding:14px;margin-top:24px;
+  }
+  .danger-box h3{margin:0 0 6px;font-size:14.5px;color:var(--alert);}
+  .danger-box p{font-size:12.5px;color:#7a2c24;margin:0 0 10px;}
+  .danger-box button{
+    width:100%;padding:11px;border:none;border-radius:10px;background:var(--alert);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;
+  }
+  input[type=file]{font-size:13px;}
+  .hidden{display:none !important;}
+  .toast{
+    position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:30px;font-size:13.5px;
+    z-index:100;opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="inner" id="header-inner">
+    <h1 id="header-title">Suivi EPS</h1>
+  </div>
+  <div class="lane"></div>
+</header>
+
+<div class="app">
+
+  <!-- HOME -->
+  <section class="screen" id="screen-home">
+    <div class="home-grid">
+      <button class="bigbtn oubli" data-action="go-oubli">
+        <div class="ico">👕</div>
+        <div class="txt"><strong>Oubli de tenue</strong><span>Enregistrer un oubli pour un élève</span></div>
+      </button>
+      <button class="bigbtn dispense" data-action="go-dispense">
+        <div class="ico">🩺</div>
+        <div class="txt"><strong>Dispense</strong><span>Saisir une période de dispense</span></div>
+      </button>
+    </div>
+    <div class="row-links">
+      <button class="linkbtn" data-action="go-historique">🔍 Historique</button>
+      <button class="linkbtn" data-action="go-backup">💾 Sauvegarde</button>
+    </div>
+    <div class="stats" id="home-stats"></div>
+  </section>
+
+  <!-- CLASSE PICKER (shared) -->
+  <section class="screen hidden" id="screen-classe">
+    <h2 class="screen-title" id="classe-title">Choisir la classe</h2>
+    <div id="classe-grid-holder"></div>
+  </section>
+
+  <!-- ELEVE PICKER (shared) -->
+  <section class="screen hidden" id="screen-eleve">
+    <div class="classe-pill" id="eleve-classe-pill"></div>
+    <h2 class="screen-title" id="eleve-title">Élève concerné</h2>
+    <div class="field">
+      <label for="eleve-prenom">Prénom</label>
+      <input type="text" id="eleve-prenom" list="dl-prenoms" autocomplete="off" placeholder="Prénom">
+    </div>
+    <div class="field">
+      <label for="eleve-nom">Nom</label>
+      <input type="text" id="eleve-nom" list="dl-noms" autocomplete="off" placeholder="Nom">
+    </div>
+    <datalist id="dl-prenoms"></datalist>
+    <datalist id="dl-noms"></datalist>
+    <button class="primary-action" id="eleve-continue">Continuer</button>
+  </section>
+
+  <!-- OUBLI CONFIRM -->
+  <section class="screen hidden" id="screen-oubli-confirm">
+    <div class="confirm-card">
+      <div class="count" id="oubli-count">1re</div>
+      <p id="oubli-confirm-text">fois cette année</p>
+    </div>
+    <div class="mini-history" id="oubli-mini-history"></div>
+    <button class="primary-action" data-action="oubli-nouveau">Nouvel oubli (même classe)</button>
+    <button class="secondary-action" data-action="go-home">Retour à l'accueil</button>
+  </section>
+
+  <!-- DISPENSE DATES -->
+  <section class="screen hidden" id="screen-dispense-dates">
+    <div class="classe-pill" id="dispense-classe-pill"></div>
+    <h2 class="screen-title" id="dispense-eleve-title">Dates de la dispense</h2>
+
+    <div class="cal-block">
+      <div class="cal-label">Date de début</div>
+      <div class="cal-value" id="start-value">Non choisie</div>
+      <div class="calendar" id="cal-start"></div>
+    </div>
+    <div class="cal-block">
+      <div class="cal-label">Date de fin</div>
+      <div class="cal-value" id="end-value">Non choisie</div>
+      <div class="calendar" id="cal-end"></div>
+    </div>
+
+    <div class="field">
+      <label for="dispense-motif">Motif</label>
+      <select id="dispense-motif">
+        <option value="Mot des parents">Mot des parents</option>
+        <option value="Certificat médical">Certificat médical</option>
+        <option value="Autre">Autre</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="dispense-detail">Précision (facultatif)</label>
+      <textarea id="dispense-detail" placeholder="Ex : douleur au genou, entorse..."></textarea>
+    </div>
+
+    <button class="primary-action green" id="dispense-save">Enregistrer la dispense</button>
+  </section>
+
+  <!-- DISPENSE CONFIRM -->
+  <section class="screen hidden" id="screen-dispense-confirm">
+    <div class="confirm-card">
+      <div class="count dispense" id="dispense-icon">🩺</div>
+      <p id="dispense-confirm-text"></p>
+    </div>
+    <button class="primary-action green" data-action="dispense-nouveau">Nouvelle dispense (même classe)</button>
+    <button class="secondary-action" data-action="go-home">Retour à l'accueil</button>
+  </section>
+
+  <!-- HISTORIQUE -->
+  <section class="screen hidden" id="screen-historique">
+    <h2 class="screen-title">Historique</h2>
+    <div class="filters">
+      <div class="tab-toggle">
+        <button id="tab-oublis" class="active">Oublis</button>
+        <button id="tab-dispenses">Dispenses</button>
+      </div>
+    </div>
+    <div class="filters">
+      <select class="classe-filter" id="hist-classe-filter"></select>
+    </div>
+    <div id="hist-list"></div>
+  </section>
+
+  <!-- BACKUP -->
+  <section class="screen hidden" id="screen-backup">
+    <h2 class="screen-title">Sauvegarde & restauration</h2>
+    <div class="info-box">
+      Toutes les données restent uniquement sur ce téléphone (aucun envoi en ligne). Pense à exporter régulièrement une sauvegarde, surtout avant de changer de téléphone ou de vider le cache du navigateur.
+    </div>
+    <button class="primary-action green" id="btn-export">⬇️ Exporter une sauvegarde</button>
+    <div class="field" style="margin-top:18px;">
+      <label for="import-file">Importer une sauvegarde (remplace les données actuelles)</label>
+      <input type="file" id="import-file" accept="application/json">
+    </div>
+
+    <div class="danger-box">
+      <h3>Réinitialiser</h3>
+      <p>Supprime définitivement tous les oublis et dispenses enregistrés sur cet appareil. Exporte une sauvegarde avant si besoin.</p>
+      <button id="btn-reset">Effacer toutes les données</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg hidden" id="modal-bg">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Data ---------- */
+  var STORAGE_KEY = "suiviEpsData_v1";
+  function loadData(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return {oublis:[], dispenses:[]};
+      var d = JSON.parse(raw);
+      if(!d.oublis) d.oublis=[];
+      if(!d.dispenses) d.dispenses=[];
+      return d;
+    }catch(e){ return {oublis:[], dispenses:[]}; }
+  }
+  function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  var data = loadData();
+
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+  function pad(n){ return n<10?"0"+n:""+n; }
+  function toISO(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function todayISO(){ return toISO(new Date()); }
+  function fmtFR(iso){
+    if(!iso) return "-";
+    var p = iso.split("-");
+    return p[2]+"/"+p[1]+"/"+p[0];
+  }
+  function ordinal(n){ return n===1 ? "1re" : n+"e"; }
+
+  /* ---------- Classes ---------- */
+  var NIVEAUX = ["6e","5e","4e","3e"];
+  var LETTRES = ["A","B","C","D","E"];
+  function classeId(niveau, lettre){ return niveau[0]+lettre; } // "6A"
+  function classeLabel(id){ return id[0]+"e "+id.slice(1); } // "6e A"
+
+  /* ---------- State ---------- */
+  var state = {
+    context: null,       // 'oubli' | 'dispense'
+    classe: null,
+    prenom: null,
+    nom: null,
+    histTab: 'oublis',
+    histClasse: 'toutes'
+  };
+
+  /* ---------- Navigation ---------- */
+  var screens = document.querySelectorAll(".screen");
+  var headerTitle = document.getElementById("header-title");
+  var headerInner = document.getElementById("header-inner");
+
+  function showScreen(id, title, withBack){
+    screens.forEach(function(s){ s.classList.add("hidden"); });
+    document.getElementById(id).classList.remove("hidden");
+    headerInner.innerHTML = "";
+    if(withBack){
+      var b = document.createElement("button");
+      b.className = "backbtn";
+      b.innerHTML = "&larr; Retour";
+      b.onclick = withBack;
+      headerInner.appendChild(b);
+    }
+    var h = document.createElement("h1");
+    h.id = "header-title"; h.textContent = title;
+    headerInner.appendChild(h);
+    window.scrollTo(0,0);
+  }
+
+  function goHome(){
+    renderHomeStats();
+    showScreen("screen-home", "Suivi EPS", null);
+  }
+
+  function renderHomeStats(){
+    document.getElementById("home-stats").textContent =
+      data.oublis.length + " oubli(s) et " + data.dispenses.length + " dispense(s) enregistrés au total.";
+  }
+
+  /* ---------- Classe picker ---------- */
+  function renderClasseGrid(){
+    var holder = document.getElementById("classe-grid-holder");
+    holder.innerHTML = "";
+    NIVEAUX.forEach(function(niv){
+      var block = document.createElement("div");
+      block.className = "niveau-block";
+      var label = document.createElement("div");
+      label.className = "niveau-label";
+      label.textContent = "Classes de " + niv;
+      block.appendChild(label);
+      var grid = document.createElement("div");
+      grid.className = "classe-grid";
+      LETTRES.forEach(function(l){
+        var id = classeId(niv, l);
+        var btn = document.createElement("button");
+        btn.className = "classe-btn";
+        btn.textContent = niv + l;
+        btn.onclick = function(){ selectClasse(id); };
+        grid.appendChild(btn);
+      });
+      block.appendChild(grid);
+      holder.appendChild(block);
+    });
+  }
+
+  function goClassePicker(){
+    var title = state.context === 'oubli' ? "Oubli de tenue" : "Dispense";
+    document.getElementById("classe-title").textContent = "Choisir la classe";
+    showScreen("screen-classe", title, goHome);
+  }
+
+  function selectClasse(id){
+    state.classe = id;
+    goElevePicker();
+  }
+
+  /* ---------- Eleve picker ---------- */
+  function getStudentsForClasse(classe){
+    var set = {};
+    data.oublis.concat(data.dispenses).forEach(function(r){
+      if(r.classe === classe){
+        set[r.prenom + " " + r.nom] = {prenom:r.prenom, nom:r.nom};
+      }
+    });
+    return Object.keys(set).map(function(k){ return set[k]; })
+      .sort(function(a,b){ return (a.nom+a.prenom).localeCompare(b.nom+b.prenom); });
+  }
+
+  function goElevePicker(){
+    var title = state.context === 'oubli' ? "Oubli de tenue" : "Dispense";
+    document.getElementById("eleve-classe-pill").textContent = classeLabel(state.classe);
+    document.getElementById("eleve-title").textContent = "Élève concerné";
+    document.getElementById("eleve-prenom").value = "";
+    document.getElementById("eleve-nom").value = "";
+
+    var students = getStudentsForClasse(state.classe);
+    var dlP = document.getElementById("dl-prenoms");
+    var dlN = document.getElementById("dl-noms");
+    dlP.innerHTML = ""; dlN.innerHTML = "";
+    var seenP = {}, seenN = {};
+    students.forEach(function(s){
+      if(!seenP[s.prenom]){ seenP[s.prenom]=1; var o=document.createElement("option"); o.value=s.prenom; dlP.appendChild(o); }
+      if(!seenN[s.nom]){ seenN[s.nom]=1; var o2=document.createElement("option"); o2.value=s.nom; dlN.appendChild(o2); }
+    });
+
+    showScreen("screen-eleve", title, goClassePicker);
+    setTimeout(function(){ document.getElementById("eleve-prenom").focus(); }, 50);
+  }
+
+  document.getElementById("eleve-continue").onclick = function(){
+    var prenom = document.getElementById("eleve-prenom").value.trim();
+    var nom = document.getElementById("eleve-nom").value.trim();
+    if(!prenom || !nom){
+      showToast("Merci de saisir le prénom et le nom");
+      return;
+    }
+    state.prenom = prenom;
+    state.nom = nom;
+    if(state.context === 'oubli'){
+      enregistrerOubli();
+    } else {
+      goDispenseDates();
+    }
+  };
+
+  /* ---------- OUBLI ---------- */
+  function enregistrerOubli(){
+    var record = {
+      id: uid(),
+      classe: state.classe,
+      prenom: state.prenom,
+      nom: state.nom,
+      date: todayISO()
+    };
+    data.oublis.push(record);
+    saveData();
+    showOubliConfirm();
+  }
+
+  function showOubliConfirm(){
+    var mine = data.oublis.filter(function(r){
+      return r.classe===state.classe && r.prenom===state.prenom && r.nom===state.nom;
+    }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+    var count = mine.length;
+    document.getElementById("oubli-count").textContent = ordinal(count);
+    document.getElementById("oubli-confirm-text").textContent =
+      "fois cette année que " + state.prenom + " " + state.nom + " (" + classeLabel(state.classe) + ") oublie sa tenue.";
+
+    var hist = document.getElementById("oubli-mini-history");
+    hist.innerHTML = "";
+    mine.slice().reverse().forEach(function(r){
+      var div = document.createElement("div");
+      div.className = "mini-history-item";
+      div.innerHTML = "<span>" + fmtFR(r.date) + "</span>";
+      hist.appendChild(div);
+    });
+
+    showScreen("screen-oubli-confirm", "Oubli enregistré", goHome);
+  }
+
+  document.querySelector('[data-action="oubli-nouveau"]').onclick = function(){
+    goElevePicker();
+  };
+
+  /* ---------- Mini calendar component ---------- */
+  var DOW = ["lu","ma","me","je","ve","sa","di"];
+  var MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+
+  function MiniCalendar(container, opts){
+    opts = opts || {};
+    this.container = container;
+    this.onSelect = opts.onSelect || function(){};
+    this.minDate = opts.minDate || null; // ISO string, days before disabled
+    var init = opts.initialDate ? new Date(opts.initialDate) : new Date();
+    this.viewYear = init.getFullYear();
+    this.viewMonth = init.getMonth();
+    this.selected = opts.initialDate || null;
+    this.render();
+  }
+  MiniCalendar.prototype.setMinDate = function(iso){ this.minDate = iso; this.render(); };
+  MiniCalendar.prototype.setSelected = function(iso){ this.selected = iso; this.render(); };
+  MiniCalendar.prototype.goMonth = function(delta){
+    this.viewMonth += delta;
+    if(this.viewMonth<0){ this.viewMonth=11; this.viewYear--; }
+    if(this.viewMonth>11){ this.viewMonth=0; this.viewYear++; }
+    this.render();
+  };
+  MiniCalendar.prototype.render = function(){
+    var self = this;
+    var y = this.viewYear, m = this.viewMonth;
+    var first = new Date(y,m,1);
+    var startDow = (first.getDay()+6)%7; // Monday=0
+    var daysInMonth = new Date(y,m+1,0).getDate();
+    var todayIso = todayISO();
+
+    var html = '<div class="cal-nav">' +
+      '<button type="button" data-nav="prev">&larr;</button>' +
+      '<div class="cal-month">'+MOIS[m]+' '+y+'</div>' +
+      '<button type="button" data-nav="next">&rarr;</button>' +
+      '</div><div class="cal-grid">';
+    DOW.forEach(function(d){ html += '<div class="cal-dow">'+d+'</div>'; });
+    for(var i=0;i<startDow;i++){ html += '<div class="cal-day empty"></div>'; }
+    for(var d=1; d<=daysInMonth; d++){
+      var iso = y+"-"+pad(m+1)+"-"+pad(d);
+      var cls = "cal-day";
+      if(iso===todayIso) cls += " today";
+      if(iso===this.selected) cls += " selected";
+      var disabled = this.minDate && iso < this.minDate;
+      html += '<button type="button" class="'+cls+'" data-date="'+iso+'"'+(disabled?' disabled':'')+'>'+d+'</button>';
+    }
+    html += '</div>';
+    this.container.innerHTML = html;
+
+    this.container.querySelector('[data-nav="prev"]').onclick = function(){ self.goMonth(-1); };
+    this.container.querySelector('[data-nav="next"]').onclick = function(){ self.goMonth(1); };
+    this.container.querySelectorAll('.cal-day[data-date]').forEach(function(btn){
+      btn.onclick = function(){
+        self.selected = btn.getAttribute("data-date");
+        self.render();
+        self.onSelect(self.selected);
+      };
+    });
+  };
+
+  /* ---------- DISPENSE ---------- */
+  var calStart, calEnd;
+  var dispenseStart = null, dispenseEnd = null;
+
+  function goDispenseDates(){
+    document.getElementById("dispense-classe-pill").textContent = classeLabel(state.classe);
+    document.getElementById("dispense-eleve-title").textContent = state.prenom + " " + state.nom;
+    document.getElementById("dispense-motif").value = "Mot des parents";
+    document.getElementById("dispense-detail").value = "";
+    dispenseStart = null; dispenseEnd = null;
+    document.getElementById("start-value").textContent = "Non choisie";
+    document.getElementById("end-value").textContent = "Non choisie";
+
+    calStart = new MiniCalendar(document.getElementById("cal-start"), {
+      onSelect: function(iso){
+        dispenseStart = iso;
+        document.getElementById("start-value").textContent = fmtFR(iso);
+        calEnd.setMinDate(iso);
+        if(dispenseEnd && dispenseEnd < iso){
+          dispenseEnd = iso;
+          calEnd.setSelected(iso);
+          document.getElementById("end-value").textContent = fmtFR(iso);
+        }
+      }
+    });
+    calEnd = new MiniCalendar(document.getElementById("cal-end"), {
+      onSelect: function(iso){
+        dispenseEnd = iso;
+        document.getElementById("end-value").textContent = fmtFR(iso);
+      }
+    });
+
+    showScreen("screen-dispense-dates", "Dispense", goElevePicker);
+  }
+
+  document.getElementById("dispense-save").onclick = function(){
+    if(!dispenseStart || !dispenseEnd){
+      showToast("Choisis une date de début et une date de fin");
+      return;
+    }
+    if(dispenseEnd < dispenseStart){
+      showToast("La date de fin doit être après la date de début");
+      return;
+    }
+    var record = {
+      id: uid(),
+      classe: state.classe,
+      prenom: state.prenom,
+      nom: state.nom,
+      dateDebut: dispenseStart,
+      dateFin: dispenseEnd,
+      motif: document.getElementById("dispense-motif").value,
+      detail: document.getElementById("dispense-detail").value.trim()
+    };
+    data.dispenses.push(record);
+    saveData();
+    showDispenseConfirm(record);
+  };
+
+  function showDispenseConfirm(record){
+    document.getElementById("dispense-confirm-text").innerHTML =
+      "Dispense enregistrée pour <strong>" + record.prenom + " " + record.nom + "</strong> (" + classeLabel(record.classe) + ")<br>" +
+      "du " + fmtFR(record.dateDebut) + " au " + fmtFR(record.dateFin) + "<br>" +
+      "Motif : " + record.motif;
+    showScreen("screen-dispense-confirm", "Dispense enregistrée", goHome);
+  }
+
+  document.querySelector('[data-action="dispense-nouveau"]').onclick = function(){
+    goElevePicker();
+  };
+
+  /* ---------- HISTORIQUE ---------- */
+  function fillHistClasseFilter(){
+    var sel = document.getElementById("hist-classe-filter");
+    sel.innerHTML = '<option value="toutes">Toutes les classes</option>';
+    NIVEAUX.forEach(function(niv){
+      LETTRES.forEach(function(l){
+        var id = classeId(niv,l);
+        var o = document.createElement("option");
+        o.value = id; o.textContent = niv+l;
+        sel.appendChild(o);
+      });
+    });
+    sel.value = state.histClasse;
+    sel.onchange = function(){ state.histClasse = sel.value; renderHistList(); };
+  }
+
+  document.getElementById("tab-oublis").onclick = function(){
+    state.histTab = 'oublis';
+    document.getElementById("tab-oublis").classList.add("active");
+    document.getElementById("tab-dispenses").classList.remove("active");
+    renderHistList();
+  };
+  document.getElementById("tab-dispenses").onclick = function(){
+    state.histTab = 'dispenses';
+    document.getElementById("tab-dispenses").classList.add("active");
+    document.getElementById("tab-oublis").classList.remove("active");
+    renderHistList();
+  };
+
+  function renderHistList(){
+    var list = document.getElementById("hist-list");
+    var items = state.histTab === 'oublis' ? data.oublis.slice() : data.dispenses.slice();
+    if(state.histClasse !== 'toutes'){
+      items = items.filter(function(r){ return r.classe === state.histClasse; });
+    }
+    if(state.histTab === 'oublis'){
+      items.sort(function(a,b){ return b.date.localeCompare(a.date); });
+    } else {
+      items.sort(function(a,b){ return b.dateDebut.localeCompare(a.dateDebut); });
+    }
+
+    list.innerHTML = "";
+    if(items.length === 0){
+      list.innerHTML = '<div class="empty-state">Aucun élément à afficher.</div>';
+      return;
+    }
+
+    items.forEach(function(r){
+      var div = document.createElement("div");
+      div.className = "hist-item";
+      if(state.histTab === 'oublis'){
+        div.innerHTML =
+          '<div class="top">' +
+            '<div><div class="name">'+r.prenom+' '+r.nom+'</div>' +
+            '<div class="meta">'+classeLabel(r.classe)+' &middot; '+fmtFR(r.date)+'</div></div>' +
+            '<div class="badge">oubli</div>' +
+          '</div>' +
+          '<div class="hist-actions">' +
+            '<button data-edit="'+r.id+'">Modifier</button>' +
+            '<button class="del" data-del="'+r.id+'">Supprimer</button>' +
+          '</div>';
+      } else {
+        div.innerHTML =
+          '<div class="top">' +
+            '<div><div class="name">'+r.prenom+' '+r.nom+'</div>' +
+            '<div class="meta">'+classeLabel(r.classe)+' &middot; du '+fmtFR(r.dateDebut)+' au '+fmtFR(r.dateFin)+'<br>'+(r.motif||"")+(r.detail?(" — "+r.detail):"")+'</div></div>' +
+            '<div class="badge dispense">dispense</div>' +
+          '</div>' +
+          '<div class="hist-actions">' +
+            '<button data-edit="'+r.id+'">Modifier</button>' +
+            '<button class="del" data-del="'+r.id+'">Supprimer</button>' +
+          '</div>';
+      }
+      list.appendChild(div);
+    });
+
+    list.querySelectorAll('[data-edit]').forEach(function(btn){
+      btn.onclick = function(){ openEditModal(btn.getAttribute("data-edit")); };
+    });
+    list.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.onclick = function(){ deleteRecord(btn.getAttribute("data-del")); };
+    });
+  }
+
+  function deleteRecord(id){
+    if(!window.confirm("Supprimer cet enregistrement ?")) return;
+    if(state.histTab === 'oublis'){
+      data.oublis = data.oublis.filter(function(r){ return r.id!==id; });
+    } else {
+      data.dispenses = data.dispenses.filter(function(r){ return r.id!==id; });
+    }
+    saveData();
+    renderHistList();
+    showToast("Supprimé");
+  }
+
+  function goHistorique(){
+    fillHistClasseFilter();
+    renderHistList();
+    showScreen("screen-historique", "Historique", goHome);
+  }
+
+  /* ---------- Edit modal ---------- */
+  var modalBg = document.getElementById("modal-bg");
+  var modalContent = document.getElementById("modal-content");
+
+  function closeModal(){ modalBg.classList.add("hidden"); modalContent.innerHTML=""; }
+  modalBg.onclick = function(e){ if(e.target===modalBg) closeModal(); };
+
+  function openEditModal(id){
+    var isOubli = state.histTab === 'oublis';
+    var record = isOubli ? data.oublis.find(function(r){return r.id===id;}) : data.dispenses.find(function(r){return r.id===id;});
+    if(!record) return;
+
+    var html = '<h3>Modifier</h3>';
+    html += '<div class="field"><label>Prénom</label><input type="text" id="edit-prenom" value="'+record.prenom+'"></div>';
+    html += '<div class="field"><label>Nom</label><input type="text" id="edit-nom" value="'+record.nom+'"></div>';
+
+    if(isOubli){
+      html += '<div class="field"><label>Date</label><input type="date" id="edit-date" value="'+record.date+'"></div>';
+    } else {
+      html += '<div class="field"><label>Date de début</label><input type="date" id="edit-debut" value="'+record.dateDebut+'"></div>';
+      html += '<div class="field"><label>Date de fin</label><input type="date" id="edit-fin" value="'+record.dateFin+'"></div>';
+      html += '<div class="field"><label>Motif</label><select id="edit-motif">' +
+        ['Mot des parents','Certificat médical','Autre'].map(function(m){
+          return '<option value="'+m+'"'+(m===record.motif?' selected':'')+'>'+m+'</option>';
+        }).join('') + '</select></div>';
+      html += '<div class="field"><label>Précision</label><textarea id="edit-detail">'+(record.detail||"")+'</textarea></div>';
+    }
+    html += '<button class="primary-action" id="edit-save">Enregistrer les modifications</button>';
+    html += '<button class="secondary-action" id="edit-cancel">Annuler</button>';
+
+    modalContent.innerHTML = html;
+    modalBg.classList.remove("hidden");
+
+    document.getElementById("edit-cancel").onclick = closeModal;
+    document.getElementById("edit-save").onclick = function(){
+      record.prenom = document.getElementById("edit-prenom").value.trim() || record.prenom;
+      record.nom = document.getElementById("edit-nom").value.trim() || record.nom;
+      if(isOubli){
+        record.date = document.getElementById("edit-date").value || record.date;
+      } else {
+        record.dateDebut = document.getElementById("edit-debut").value || record.dateDebut;
+        record.dateFin = document.getElementById("edit-fin").value || record.dateFin;
+        record.motif = document.getElementById("edit-motif").value;
+        record.detail = document.getElementById("edit-detail").value.trim();
+      }
+      saveData();
+      closeModal();
+      renderHistList();
+      showToast("Modifié");
+    };
+  }
+
+  /* ---------- Backup ---------- */
+  document.getElementById("btn-export").onclick = function(){
+    var blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var d = new Date();
+    a.href = url;
+    a.download = "suivi-eps-sauvegarde-" + toISO(d) + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Sauvegarde téléchargée");
+  };
+
+  document.getElementById("import-file").onchange = function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var imported = JSON.parse(reader.result);
+        if(!imported.oublis || !imported.dispenses) throw new Error("format invalide");
+        if(!window.confirm("Importer ce fichier remplacera toutes les données actuelles. Continuer ?")) return;
+        data = imported;
+        saveData();
+        showToast("Données importées");
+        renderHomeStats();
+      }catch(err){
+        alert("Fichier invalide : impossible de lire cette sauvegarde.");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  };
+
+  document.getElementById("btn-reset").onclick = function(){
+    if(!window.confirm("Es-tu sûr(e) de vouloir tout supprimer ? Cette action est irréversible.")) return;
+    if(!window.confirm("Dernière confirmation : toutes les données seront effacées définitivement.")) return;
+    data = {oublis:[], dispenses:[]};
+    saveData();
+    showToast("Données effacées");
+    goHome();
+  };
+
+  function goBackup(){ showScreen("screen-backup", "Sauvegarde", goHome); }
+
+  /* ---------- Toast ---------- */
+  var toastTimer;
+  function showToast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2200);
+  }
+
+  /* ---------- Wire home buttons ---------- */
+  document.querySelector('[data-action="go-oubli"]').onclick = function(){ state.context='oubli'; goClassePicker(); };
+  document.querySelector('[data-action="go-dispense"]').onclick = function(){ state.context='dispense'; goClassePicker(); };
+  document.querySelector('[data-action="go-historique"]').onclick = goHistorique;
+  document.querySelector('[data-action="go-backup"]').onclick = goBackup;
+  document.querySelectorAll('[data-action="go-home"]').forEach(function(b){ b.onclick = goHome; });
+
+  /* ---------- Init ---------- */
+  renderClasseGrid();
+  goHome();
+
+})();
+</script>
+</body>
+</html>
